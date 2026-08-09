@@ -1,0 +1,360 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#2563eb">
+<title>Smart Calculator</title>
+<style>
+:root{--bg:#f5f7fb;--card:#fff;--text:#111827;--muted:#6b7280;--primary:#2563eb;--primary2:#dbeafe;--border:#e5e7eb;--danger:#dc2626;--dangerBg:#fee2e2;--nav:#fff}
+*{box-sizing:border-box}html,body{margin:0;min-height:100%;font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;background:var(--bg);color:var(--text)}
+button,input,textarea,select{font:inherit}button{cursor:pointer}
+.app{width:100%;max-width:520px;min-height:100vh;margin:auto;background:var(--bg);padding-bottom:82px}
+.top{position:sticky;top:0;z-index:20;background:rgba(245,247,251,.95);backdrop-filter:blur(12px);padding:15px 17px 12px;border-bottom:1px solid var(--border)}
+.top h1{font-size:24px;margin:0;font-weight:800}.top p{font-size:12px;color:var(--muted);margin:3px 0 0}
+main{padding:15px 15px 10px}.screen{background:#111827;color:#fff;border-radius:22px;padding:18px 18px 15px;min-height:145px;margin-bottom:13px;display:flex;flex-direction:column;justify-content:flex-end;box-shadow:0 8px 25px #00000012}
+.expression{min-height:27px;font-size:17px;color:#9ca3af;text-align:right;overflow:auto;white-space:nowrap}.answer{font-size:39px;font-weight:800;text-align:right;margin-top:7px;overflow:auto;white-space:nowrap}
+.quick{display:flex;justify-content:flex-end;gap:8px;min-height:37px;margin-top:10px}.quick button{border:0;background:#1d4ed8;color:#fff;border-radius:10px;padding:8px 11px;font-size:12px;font-weight:700}
+.keys{display:grid;grid-template-columns:repeat(4,1fr);gap:9px}.keys button{border:0;background:var(--card);color:var(--text);border-radius:16px;min-height:62px;font-size:20px;font-weight:700;box-shadow:0 2px 8px #0000000b}.keys button:active{transform:scale(.96)}.keys .op{background:var(--primary2);color:var(--primary)}.keys .danger{background:var(--dangerBg);color:var(--danger)}.keys .equal{background:var(--primary);color:#fff}.keys .zero2{grid-column:span 2}
+.section{display:none}.section.active{display:block}
+h2{font-size:22px;margin:4px 0 14px}h3{font-size:16px;margin:0 0 10px}
+.card{background:var(--card);border:1px solid var(--border);border-radius:17px;padding:15px;margin-bottom:12px;box-shadow:0 3px 10px #00000008}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}.tool{width:100%;border:1px solid var(--border);background:var(--card);border-radius:16px;padding:15px;text-align:left;min-height:105px}.tool .icon{font-size:25px}.tool b{display:block;margin-top:7px}.tool span{display:block;color:var(--muted);font-size:12px;margin-top:3px;line-height:1.35}
+.field{margin-bottom:11px}.field label{display:block;font-size:12px;color:var(--muted);margin-bottom:5px}.field input,.field textarea,.field select{width:100%;border:1px solid var(--border);background:#fff;color:var(--text);border-radius:12px;padding:12px;outline:none}.field input:focus,.field textarea:focus,.field select:focus{border-color:var(--primary)}.field textarea{min-height:120px;resize:vertical}
+.btn{border:0;border-radius:12px;background:var(--primary);color:#fff;padding:11px 14px;font-weight:750}.btn.secondary{background:#eef2f7;color:var(--text)}.btn.danger{background:var(--dangerBg);color:var(--danger)}.btn.full{width:100%}
+.result{background:#eff6ff;border-radius:14px;padding:14px;margin-top:12px;color:#1e40af;line-height:1.6}.result strong{font-size:18px}
+.row{display:flex;gap:8px;align-items:center}.row.between{justify-content:space-between}.row.wrap{flex-wrap:wrap}
+.list-item{padding:13px 0;border-bottom:1px solid var(--border)}.list-item:last-child{border-bottom:0}.small{font-size:12px;color:var(--muted)}.muted{color:var(--muted)}
+.history-exp{font-size:14px;color:var(--muted)}.history-result{font-size:20px;font-weight:800;margin-top:3px}
+.note-title{font-weight:800;font-size:16px}.note-content{margin-top:7px;white-space:pre-wrap;line-height:1.5}.note-actions{display:flex;gap:7px;margin-top:10px}.note-actions button{padding:7px 10px;border:0;border-radius:9px;font-size:12px;font-weight:700}
+.back{margin-bottom:12px}.empty{text-align:center;padding:35px 12px;color:var(--muted)}
+.bottom{position:fixed;bottom:0;left:50%;transform:translateX(-50%);z-index:50;width:min(520px,100%);display:grid;grid-template-columns:repeat(4,1fr);background:var(--nav);border-top:1px solid var(--border);padding-bottom:env(safe-area-inset-bottom)}
+.bottom button{border:0;background:transparent;color:#6b7280;padding:8px 2px 7px;font-size:10px}.bottom button.active{color:var(--primary);font-weight:800}.bottom .ico{display:block;font-size:20px;margin-bottom:2px}
+.modal{position:fixed;inset:0;background:#0008;z-index:100;display:none;align-items:flex-end;justify-content:center}.modal.open{display:flex}.modalbox{width:min(520px,100%);max-height:90vh;overflow:auto;background:var(--card);border-radius:22px 22px 0 0;padding:18px}.modalhead{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}.close{border:0;background:#eef2f7;border-radius:10px;padding:8px 11px}
+@media(min-width:521px){body{padding:10px}.app{border-radius:25px;overflow:hidden;box-shadow:0 8px 35px #0002}.bottom{bottom:10px;border-radius:0 0 25px 25px}}
+</style>
+</head>
+<body>
+<div class="app">
+<header class="top"><h1>Smart Calculator</h1><p>Calculator • History • Notes • More Tools</p></header>
+<main>
+<section id="calculator" class="section active">
+  <div class="screen">
+    <div id="expression" class="expression"></div>
+    <div id="answer" class="answer">0</div>
+    <div id="quick" class="quick"></div>
+  </div>
+  <div class="keys">
+    <button class="danger" data-key="C">C</button><button data-key="⌫">⌫</button><button class="op" data-key="%">%</button><button class="op" data-key="÷">÷</button>
+    <button data-key="7">7</button><button data-key="8">8</button><button data-key="9">9</button><button class="op" data-key="×">×</button>
+    <button data-key="4">4</button><button data-key="5">5</button><button data-key="6">6</button><button class="op" data-key="-">−</button>
+    <button data-key="1">1</button><button data-key="2">2</button><button data-key="3">3</button><button class="op" data-key="+">+</button>
+    <button data-key="00">00</button><button data-key="0">0</button><button data-key=".">.</button><button class="equal" data-key="=">=</button>
+  </div>
+</section>
+
+<section id="history" class="section">
+  <div class="row between"><h2>Calculation History</h2><button id="clearHistory" class="btn danger">Clear</button></div>
+  <div id="historyList" class="card"></div>
+</section>
+
+<section id="tools" class="section">
+  <h2>More Tools</h2>
+  <div class="grid2">
+    <button class="tool" onclick="openTool('age')"><span class="icon">🎂</span><b>Age Calculator</b><span>Years, months and days</span></button>
+    <button class="tool" onclick="openTool('emi')"><span class="icon">💰</span><b>EMI Calculator</b><span>Loan EMI and interest</span></button>
+    <button class="tool" onclick="openTool('gst')"><span class="icon">🧾</span><b>GST Calculator</b><span>Add or remove GST</span></button>
+    <button class="tool" onclick="openTool('discount')"><span class="icon">🏷️</span><b>Discount</b><span>Savings and final price</span></button>
+    <button class="tool" onclick="openTool('length')"><span class="icon">📏</span><b>Length</b><span>Meter, feet, mile and more</span></button>
+    <button class="tool" onclick="openTool('area')"><span class="icon">📐</span><b>Area</b><span>m², ft², acre and hectare</span></button>
+    <button class="tool" onclick="openTool('data')"><span class="icon">💾</span><b>Data</b><span>Byte, KB, MB, GB, TB</span></button>
+    <button class="tool" onclick="openTool('time')"><span class="icon">⏱️</span><b>Time</b><span>Seconds, hours, days, years</span></button>
+  </div>
+</section>
+
+<section id="notes" class="section">
+  <div class="row between"><h2>My Notes</h2><button class="btn" onclick="openNoteEditor()">+ Note</button></div>
+  <div id="notesList" class="card"></div>
+</section>
+
+<section id="toolView" class="section"></section>
+</main>
+
+<nav class="bottom">
+  <button class="active" data-nav="calculator" onclick="nav('calculator')"><span class="ico">🧮</span>Calculator</button>
+  <button data-nav="history" onclick="nav('history')"><span class="ico">🕘</span>History</button>
+  <button data-nav="tools" onclick="nav('tools')"><span class="ico">🧰</span>More Tools</button>
+  <button data-nav="notes" onclick="nav('notes')"><span class="ico">📝</span>Note</button>
+</nav>
+</div>
+
+<div id="modal" class="modal">
+  <div class="modalbox">
+    <div class="modalhead"><h2 id="modalTitle" style="margin:0">Note</h2><button class="close" onclick="closeModal()">✕</button></div>
+    <div class="field"><label>Title</label><input id="noteTitle" maxlength="120" placeholder="Note title"></div>
+    <div class="field"><label>Note Content</label><textarea id="noteContent" placeholder="Write your note..."></textarea></div>
+    <button class="btn full" onclick="saveNoteFromModal()">Save Note</button>
+  </div>
+</div>
+
+<script>
+"use strict";
+
+/* ---------- Storage ---------- */
+const STORAGE_HISTORY="smartCalc.history.v2";
+const STORAGE_NOTES="smartCalc.notes.v2";
+let history=[];
+let notes=[];
+try{history=JSON.parse(localStorage.getItem(STORAGE_HISTORY)||"[]")}catch(e){history=[]}
+try{notes=JSON.parse(localStorage.getItem(STORAGE_NOTES)||"[]")}catch(e){notes=[]}
+
+/* ---------- Calculator ---------- */
+let expression="";
+let lastResult="";
+
+const expressionEl=document.getElementById("expression");
+const answerEl=document.getElementById("answer");
+const quickEl=document.getElementById("quick");
+
+function pretty(s){return String(s).replaceAll("*","×").replaceAll("/","÷").replaceAll("-","−")}
+function renderCalc(){
+  expressionEl.textContent=pretty(expression);
+  answerEl.textContent=lastResult || expression || "0";
+  quickEl.innerHTML=lastResult && lastResult!=="Error"
+    ? '<button onclick="addCalculationToNote()">📝 Add to Note</button>'
+    : "";
+}
+function normalizeExpression(s){
+  return s.replaceAll("×","*").replaceAll("÷","/").replaceAll("−","-").replace(/\s+/g,"");
+}
+
+/* Recursive-descent parser: no eval, supports + - * / % and parentheses. */
+function calculateExpression(input){
+  let expression = normalizeExpression(input);
+
+  try {
+    /* This mirrors the original Android app:
+       num1 operator num2%  =>  num1 operator (num1*num2/100)
+       standalone num%      =>  num/100
+    */
+    if(expression.includes("%")){
+      expression = expression.replace(/([0-9.]+)([+\-*/])([0-9.]+)%/g,
+        function(match, num1, operator, num2){
+          const calculatedPercent=(parseFloat(num1)*parseFloat(num2))/100;
+          return num1+operator+calculatedPercent;
+        });
+
+      expression = expression.replace(/([0-9.]+)%/g,
+        function(match, num){
+          return parseFloat(num)/100;
+        });
+    }
+
+    if(!/^[0-9+\-*/().\s]+$/.test(expression)) throw new Error("invalid");
+    const result=Function('"use strict"; return ('+expression+')')();
+    if(!Number.isFinite(result)) throw new Error("invalid result");
+    return result;
+  }catch(e){
+    throw new Error("Error");
+  }
+}
+function formatNumber(n){
+  if(Math.abs(n)<1e-12)n=0;
+  const rounded=Number(n.toFixed(12));
+  return String(rounded);
+}
+function addHistory(exp,res){
+  history.unshift({id:Date.now()+Math.random(),expression:exp,result:res,time:new Date().toLocaleString()});
+  history=history.slice(0,200);
+  localStorage.setItem(STORAGE_HISTORY,JSON.stringify(history));
+  renderHistory();
+}
+function doCalculate(){
+  if(!expression.trim())return;
+  try{
+    const value=calculateExpression(expression);
+    lastResult=formatNumber(value);
+    addHistory(pretty(expression),lastResult);
+  }catch(e){lastResult="Error"}
+  renderCalc();
+}
+function appendValue(v){
+  if(v==="×"||v==="÷"||v==="−")v={"×":"×","÷":"÷","−":"−"}[v];
+  if(lastResult && /^[0-9.(]/.test(v)){expression=lastResult;lastResult=""}
+  if(v==="00" && !expression)expression="0";
+  else expression+=v;
+  renderCalc();
+}
+function backspace(){expression=expression.slice(0,-1);lastResult="";renderCalc()}
+function clearCalc(){expression="";lastResult="";renderCalc()}
+function percentKey(){
+  lastResult="";
+  expression += "%";
+  renderCalc();
+}
+function handleKey(k){
+  if(k==="C"){clearCalc();return}
+  if(k==="⌫"){backspace();return}
+  if(k==="%"){percentKey();return}
+  if(k==="="){doCalculate();return}
+  appendValue(k);
+}
+document.querySelectorAll(".keys button").forEach(b=>b.addEventListener("click",()=>handleKey(b.dataset.key)));
+document.addEventListener("keydown",e=>{
+  const k=e.key;
+  if(/[0-9.]/.test(k)){appendValue(k);return}
+  if(k==="+"){appendValue("+");return}
+  if(k==="-"){appendValue("−");return}
+  if(k==="*"){appendValue("×");return}
+  if(k==="/"){appendValue("÷");return}
+  if(k==="%"){percentKey();return}
+  if(k==="Enter"||k==="="){doCalculate();return}
+  if(k==="Backspace"){backspace();return}
+  if(k==="Escape"){clearCalc()}
+});
+
+/* ---------- Navigation ---------- */
+function nav(id){
+  document.querySelectorAll(".section").forEach(s=>s.classList.remove("active"));
+  document.getElementById(id).classList.add("active");
+  document.querySelectorAll(".bottom button").forEach(b=>b.classList.toggle("active",b.dataset.nav===id));
+  if(id==="history")renderHistory();
+  if(id==="notes")renderNotes();
+}
+function renderHistory(){
+  const box=document.getElementById("historyList");
+  if(!history.length){box.innerHTML='<div class="empty">No history yet.<br>Calculations will appear here.</div>';return}
+  box.innerHTML=history.map(h=>`
+    <div class="list-item">
+      <div class="history-exp">${esc(h.expression)}</div>
+      <div class="history-result">= ${esc(h.result)}</div>
+      <div class="small">${esc(h.time)}</div>
+      <div class="row" style="margin-top:8px"><button class="btn secondary" onclick="historyToNote('${encodeURIComponent(h.expression)}','${encodeURIComponent(h.result)}')">📝 Add to Note</button></div>
+    </div>`).join("");
+}
+document.getElementById("clearHistory").onclick=()=>{
+  if(confirm("Clear all calculation history?")){history=[];localStorage.removeItem(STORAGE_HISTORY);renderHistory()}
+};
+
+/* ---------- Notes ---------- */
+function esc(v){return String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
+function persistNotes(){localStorage.setItem(STORAGE_NOTES,JSON.stringify(notes))}
+function renderNotes(){
+  const box=document.getElementById("notesList");
+  if(!notes.length){box.innerHTML='<div class="empty">No notes yet.<br>Create a note or save a calculation here.</div>';return}
+  box.innerHTML=notes.map(n=>`
+    <div class="list-item">
+      <div class="row between"><div class="note-title">${esc(n.title)}</div><div class="small">${esc(n.time)}</div></div>
+      <div class="note-content">${esc(n.content)}</div>
+      <div class="note-actions">
+        <button style="background:#eef2f7;color:#111827" onclick="shareNote('${n.id}')">↗ Share</button>
+        <button style="background:#eef2f7;color:#111827" onclick="editNote('${n.id}')">Edit</button>
+        <button style="background:#fee2e2;color:#dc2626" onclick="deleteNote('${n.id}')">Delete</button>
+      </div>
+    </div>`).join("");
+}
+function openNoteEditor(title="",content="",id=""){
+  document.getElementById("modalTitle").textContent=id?"Edit Note":"Create New Note";
+  document.getElementById("noteTitle").value=title;
+  document.getElementById("noteContent").value=content;
+  document.getElementById("modal").dataset.editId=id;
+  document.getElementById("modal").classList.add("open");
+}
+function closeModal(){document.getElementById("modal").classList.remove("open")}
+function saveNoteFromModal(){
+  const modal=document.getElementById("modal"),id=modal.dataset.editId||"";
+  const title=document.getElementById("noteTitle").value.trim()||"Untitled Note";
+  const content=document.getElementById("noteContent").value.trim();
+  if(!content){alert("Please write something in the note.");return}
+  if(id){
+    const n=notes.find(x=>x.id===id);
+    if(n){n.title=title;n.content=content;n.time=new Date().toLocaleString()}
+  }else notes.unshift({id:crypto.randomUUID?crypto.randomUUID():String(Date.now()+Math.random()),title,content,time:new Date().toLocaleString()});
+  persistNotes();closeModal();renderNotes();
+}
+function addCalculationToNote(){if(lastResult&&lastResult!=="Error")openNoteEditor("Calculation Result",`${pretty(expression)} = ${lastResult}`)}
+function historyToNote(ex,res){openNoteEditor("Calculation Result",`${decodeURIComponent(ex)} = ${decodeURIComponent(res)}`)}
+function editNote(id){const n=notes.find(x=>x.id===id);if(n)openNoteEditor(n.title,n.content,n.id)}
+function deleteNote(id){if(confirm("Delete this note?")){notes=notes.filter(n=>n.id!==id);persistNotes();renderNotes()}}
+async function shareNote(id){
+  const n=notes.find(x=>x.id===id);if(!n)return;
+  const text=`${n.title}\n\n${n.content}\n\n${n.time}`;
+  try{
+    if(navigator.share){await navigator.share({title:n.title,text})}
+    else if(navigator.clipboard){await navigator.clipboard.writeText(text);alert("Note copied to clipboard.")}
+    else{prompt("Copy this note:",text)}
+  }catch(e){}
+}
+
+/* ---------- Tools ---------- */
+const toolView=document.getElementById("toolView");
+function openTool(type){
+  const names={age:"Age Calculator",emi:"EMI Calculator",gst:"GST Calculator",discount:"Discount Calculator",length:"Length Converter",area:"Area Converter",data:"Data Converter",time:"Time Converter"};
+  let h=`<button class="btn secondary back" onclick="nav('tools')">← Back to Tools</button><h2>${names[type]}</h2><div class="card">`;
+  if(type==="age")h+=ageTool();
+  if(type==="emi")h+=emiTool();
+  if(type==="gst")h+=gstTool();
+  if(type==="discount")h+=discountTool();
+  if(["length","area","data","time"].includes(type))h+=converterTool(type);
+  h+="</div>";
+  toolView.innerHTML=h;nav("toolView");
+}
+function ageTool(){return `<div class="field"><label>Date of Birth</label><input id="ageDob" type="date"></div><button class="btn full" onclick="ageCalc()">Calculate Age</button><div id="toolResult"></div>`}
+function ageCalc(){
+  const v=document.getElementById("ageDob").value;if(!v)return;
+  const dob=new Date(v+"T00:00:00"),today=new Date();
+  if(dob>today){document.getElementById("toolResult").innerHTML='<div class="result">Birth date cannot be in the future.</div>';return}
+  let y=today.getFullYear()-dob.getFullYear(),m=today.getMonth()-dob.getMonth(),d=today.getDate()-dob.getDate();
+  if(d<0){m--;d+=new Date(today.getFullYear(),today.getMonth(),0).getDate()}
+  if(m<0){y--;m+=12}
+  document.getElementById("toolResult").innerHTML=`<div class="result"><strong>${y} years, ${m} months, ${d} days</strong><br>Exact age as of today.</div>`;
+}
+function emiTool(){return `<div class="field"><label>Loan Amount</label><input id="emiP" type="number" value="100000" min="0"></div><div class="field"><label>Annual Interest Rate (%)</label><input id="emiR" type="number" value="10" min="0" step="0.01"></div><div class="field"><label>Tenure (months)</label><input id="emiN" type="number" value="12" min="1"></div><button class="btn full" onclick="emiCalc()">Calculate EMI</button><div id="toolResult"></div>`}
+function emiCalc(){
+  const P=Number(document.getElementById("emiP").value),annual=Number(document.getElementById("emiR").value),N=Number(document.getElementById("emiN").value);
+  if(P<0||annual<0||N<=0){document.getElementById("toolResult").innerHTML='<div class="result">Enter valid values.</div>';return}
+  const r=annual/1200,emi=r===0?P/N:P*r*Math.pow(1+r,N)/(Math.pow(1+r,N)-1),total=emi*N;
+  document.getElementById("toolResult").innerHTML=`<div class="result">Monthly EMI: <strong>${money(emi)}</strong><br>Total Payment: ${money(total)}<br>Total Interest: ${money(total-P)}</div>`;
+}
+function gstTool(){return `<div class="field"><label>Amount</label><input id="gstA" type="number" value="1000"></div><div class="field"><label>GST (%)</label><input id="gstR" type="number" value="18"></div><div class="field"><label>Mode</label><select id="gstM"><option value="add">Add GST</option><option value="remove">Remove GST</option></select></div><button class="btn full" onclick="gstCalc()">Calculate GST</button><div id="toolResult"></div>`}
+function gstCalc(){
+  const a=Number(document.getElementById("gstA").value),r=Number(document.getElementById("gstR").value)/100,m=document.getElementById("gstM").value;
+  if(a<0||r<0){document.getElementById("toolResult").innerHTML='<div class="result">Enter valid values.</div>';return}
+  if(m==="add"){const g=a*r;document.getElementById("toolResult").innerHTML=`<div class="result">Base Amount: ${money(a)}<br>GST: ${money(g)}<br>Total: <strong>${money(a+g)}</strong></div>`}
+  else{const base=a/(1+r);document.getElementById("toolResult").innerHTML=`<div class="result">Original Amount: ${money(base)}<br>GST Included: ${money(a-base)}<br>Total: <strong>${money(a)}</strong></div>`}
+}
+function discountTool(){return `<div class="field"><label>Original Price</label><input id="discP" type="number" value="1000"></div><div class="field"><label>Discount (%)</label><input id="discR" type="number" value="10"></div><button class="btn full" onclick="discountCalc()">Calculate Discount</button><div id="toolResult"></div>`}
+function discountCalc(){
+  const p=Number(document.getElementById("discP").value),r=Number(document.getElementById("discR").value);
+  if(p<0||r<0){document.getElementById("toolResult").innerHTML='<div class="result">Enter valid values.</div>';return}
+  const save=p*r/100;document.getElementById("toolResult").innerHTML=`<div class="result">You Save: ${money(save)}<br>Final Price: <strong>${money(p-save)}</strong></div>`;
+}
+const units={
+ length:["Meters","Kilometers","Feet","Inches","Miles","Yards","Centimeters","Millimeters"],
+ area:["Square Meters","Square Feet","Acres","Hectares","Square Yards","Square Inches"],
+ data:["Bytes","KB","MB","GB","TB"],
+ time:["Seconds","Minutes","Hours","Days","Weeks","Years"]
+};
+const factors={
+ length:{Meters:1,Kilometers:1000,Feet:.3048,Inches:.0254,Miles:1609.344,Yards:.9144,Centimeters:.01,Millimeters:.001},
+ area:{"Square Meters":1,"Square Feet":.09290304,Acres:4046.8564224,Hectares:10000,"Square Yards":.83612736,"Square Inches":.00064516},
+ data:{Bytes:1,KB:1024,MB:1048576,GB:1073741824,TB:1099511627776},
+ time:{Seconds:1,Minutes:60,Hours:3600,Days:86400,Weeks:604800,Years:31536000}
+};
+function converterTool(type){
+ const u=units[type];
+ return `<div class="field"><label>Value</label><input id="cvVal" type="number" value="1"></div><div class="field"><label>From</label><select id="cvFrom">${u.map(x=>`<option>${x}</option>`).join("")}</select></div><div class="field"><label>To</label><select id="cvTo">${u.map((x,i)=>`<option ${i===1?"selected":""}>${x}</option>`).join("")}</select></div><button class="btn full" onclick="convert('${type}')">Convert</button><div id="toolResult"></div>`;
+}
+function convert(type){
+ const v=Number(document.getElementById("cvVal").value),a=document.getElementById("cvFrom").value,b=document.getElementById("cvTo").value;
+ if(!Number.isFinite(v)){document.getElementById("toolResult").innerHTML='<div class="result">Enter a valid value.</div>';return}
+ const out=v*factors[type][a]/factors[type][b];
+ document.getElementById("toolResult").innerHTML=`<div class="result"><strong>${fmt(out)}</strong> ${esc(b)}</div>`;
+}
+function fmt(n){return Number(n.toFixed(10)).toLocaleString(undefined,{maximumFractionDigits:10})}
+function money(n){return "₹"+Number(n.toFixed(2)).toLocaleString("en-IN",{minimumFractionDigits:2,maximumFractionDigits:2})}
+
+renderCalc();renderHistory();renderNotes();
+</script>
+</body>
+</html>
